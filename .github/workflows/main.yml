@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Install Bruin CLI
+        run: |
+          curl -fsSL https://get.bruin-data.com/install.sh | bash
+          echo "$HOME/.bruin/bin" >> "$GITHUB_PATH"
+
+      - name: Check Bruin formatting
+        run: bruin format --check
+
+      - name: Validate Bruin dry-run
+        run: bruin dry-run
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
