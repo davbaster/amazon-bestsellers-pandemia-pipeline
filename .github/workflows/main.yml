@@ -39,7 +39,7 @@ jobs:
 
       - name: Install Bruin CLI
         run: |
-          curl -fsSL https://get.bruin-data.com/install.sh | bash
+          curl -fsSL https://getbruin.com/install/cli | bash
           echo "$HOME/.bruin/bin" >> "$GITHUB_PATH"
 
       - name: Create CI Bruin configuration
