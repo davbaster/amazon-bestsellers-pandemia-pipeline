@@ -58,9 +58,91 @@ gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS
 gcloud config set project your-gcp-project-id
 ```
 
-#### 2. Infrastructure Setup
+#### 2. Manual Infrastructure Setup In GCP
+
+For this project, the recommended approach is to create the cloud infrastructure once with an admin or owner account, and then use GitHub Actions only for pipeline execution and smoke tests.
+
+Create these resources manually in Google Cloud:
+
+1. create a GCS bucket for the raw data lake
+2. create a BigQuery dataset named `raw`
+3. create a BigQuery dataset named `analytics`
+4. create a service account for the pipeline
+5. grant the service account these permissions:
+   - `roles/bigquery.dataEditor`
+   - `roles/bigquery.jobUser`
+   - `roles/storage.objectAdmin` on the raw bucket
+
+You can do this from the console or with `gcloud`.
+
+Example bucket name:
 
 ```bash
+your-gcp-project-id-amz-bestsellers-raw
+```
+
+Suggested BigQuery datasets:
+
+- `raw`
+- `analytics`
+
+Manual setup verification:
+
+```bash
+gcloud storage buckets list --project="your-gcp-project-id"
+bq ls --project_id "your-gcp-project-id"
+gcloud iam service-accounts list --project="your-gcp-project-id"
+```
+
+Image placeholder:
+
+![Manual GCP Setup Placeholder](docs/images/step-01-manual-gcp-setup.png)
+
+#### 3. Configure Bruin
+
+```bash
+cp .bruin.yml.example .bruin.yml
+```
+
+Image placeholder:
+
+![Bruin Config Placeholder](docs/images/step-02-bruin-config.png)
+
+#### 4. Run the Pipeline
+
+```bash
+# Setup your Bruin environment
+bruin init
+
+# Upload the raw files to the cloud data lake
+export RAW_DATA_LAKE_BUCKET="your-gcp-project-id-amz-bestsellers-raw"
+make upload-raw
+
+# Run the Bruin batch DAG in BigQuery
+make pipeline-cloud
+```
+
+Image placeholder:
+
+![Pipeline Run Placeholder](docs/images/step-03-pipeline-run.png)
+
+#### 5. Launch Dashboard
+
+```bash
+pip install streamlit
+streamlit run dashboard/app.py
+```
+
+Image placeholder:
+
+![Dashboard Placeholder](docs/images/step-04-dashboard.png)
+
+### Optional: Create The Infrastructure With Terraform
+
+If you want Terraform to create and manage the infrastructure, run it locally with an admin-level Google Cloud identity.
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/service-account.json"
 export TF_VAR_project_id="your-gcp-project-id"
 export TF_VAR_region="us-central1"
 
@@ -76,38 +158,14 @@ export BUCKET_NAME="${TF_VAR_project_id}-amz-bestsellers-raw"
 terraform import google_storage_bucket.data_lake "$BUCKET_NAME"
 ```
 
-Image placeholder:
+Important:
 
-![Infrastructure Setup Placeholder](docs/images/step-01-infrastructure-setup.png)
-
-#### 3. Run the Pipeline
-
-```bash
-# Setup your Bruin environment
-bruin init
-
-# Upload the raw files to the cloud data lake
-export RAW_DATA_LAKE_BUCKET=$(terraform -chdir=infrastructure/gcp output -raw data_lake_bucket_name)
-make upload-raw
-
-# Run the Bruin batch DAG in BigQuery
-make pipeline-cloud
-```
+- use Terraform locally or from a privileged admin identity
+- do not use the runtime pipeline service account for infrastructure creation
 
 Image placeholder:
 
-![Pipeline Run Placeholder](docs/images/step-02-pipeline-run.png)
-
-#### 4. Launch Dashboard
-
-```bash
-pip install streamlit
-streamlit run dashboard/app.py
-```
-
-Image placeholder:
-
-![Dashboard Placeholder](docs/images/step-03-dashboard.png)
+![Terraform Infrastructure Placeholder](docs/images/step-05-terraform-infra.png)
 
 ### Local Execution (Optional)
 
@@ -123,7 +181,7 @@ make pipeline
 
 The expected cloud workflow is:
 
-1. Provision infrastructure on GCP with Terraform
+1. Provision infrastructure in GCP manually or with local Terraform
 2. Upload batch files to the GCS raw data lake
 3. Run the Bruin DAG to build staging, dimensions, and facts in BigQuery
 4. Query the final tables and expose results in the dashboard
@@ -132,7 +190,24 @@ The expected cloud workflow is:
 
 Yes, you can and should use simple tests to confirm the infrastructure and data were created correctly.
 
-### 1. Verify Terraform Outputs
+### 1. Verify Infrastructure Exists
+
+If you created the infrastructure manually:
+
+```bash
+gcloud storage buckets list --project="your-gcp-project-id"
+bq ls --project_id "your-gcp-project-id"
+gcloud iam service-accounts list --project="your-gcp-project-id"
+```
+
+Expected:
+
+- the raw GCS bucket exists
+- the `raw` dataset exists
+- the `analytics` dataset exists
+- the pipeline service account exists
+
+If you created the infrastructure with Terraform:
 
 ```bash
 terraform -chdir=infrastructure/gcp output
@@ -376,9 +451,11 @@ Live dashboard: https://your-app-url.streamlit.app
 
 Recommended screenshots to place in `docs/images/`:
 
-- `step-01-infrastructure-setup.png`
-- `step-02-pipeline-run.png`
-- `step-03-dashboard.png`
+- `step-01-manual-gcp-setup.png`
+- `step-02-bruin-config.png`
+- `step-03-pipeline-run.png`
+- `step-04-dashboard.png`
+- `step-05-terraform-infra.png`
 - `architecture-overview.png`
 - `dashboard-authors-tile.png`
 - `dashboard-genres-tile.png`
