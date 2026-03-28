@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Bruin CLI
+        run: |
+          curl -fsSL https://getbruin.com/install/cli | bash
+          echo "$HOME/.bruin/bin" >> "$GITHUB_PATH"
+
+      - name: Check Bruin formatting
+        run: bruin format --check
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -recursive
+
+      - name: Compile Python files
+        run: |
+          python -m py_compile \
+            dashboard/app.py \
+            pipeline/ingestion/enrich_author_nationality.py \
+            pipeline/ingestion/upload_to_gcs.py \
+            pipeline/assets/ingest_raw_files.py

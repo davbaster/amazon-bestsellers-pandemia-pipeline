@@ -1,13 +1,10 @@
-name: CI
+name: Integration Cloud
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 
 jobs:
-  validate:
+  integration:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -25,9 +22,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v3
         with:
@@ -36,6 +30,14 @@ jobs:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
           create_credentials_file: true
           export_environment_variables: true
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
 
       - name: Install Bruin CLI
         run: |
@@ -57,16 +59,29 @@ jobs:
                     service_account_file: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
           EOF
 
-      - name: Validate Bruin pipeline
-        run: bruin validate pipeline/pipeline.yml
-
-      - name: Check Terraform formatting
-        run: terraform fmt -check -recursive
-
-      - name: Compile Python files
+      - name: Apply Terraform infrastructure
         run: |
-          python -m py_compile \
-            dashboard/app.py \
-            pipeline/ingestion/enrich_author_nationality.py \
-            pipeline/ingestion/upload_to_gcs.py \
-            pipeline/assets/ingest_raw_files.py
+          export TF_VAR_project_id="${{ vars.GCP_PROJECT_ID }}"
+          export TF_VAR_region="${{ vars.GCP_REGION }}"
+          terraform -chdir=infrastructure/gcp init
+          terraform -chdir=infrastructure/gcp apply -auto-approve
+
+      - name: Export bucket name
+        run: |
+          echo "RAW_DATA_LAKE_BUCKET=$(terraform -chdir=infrastructure/gcp output -raw data_lake_bucket_name)" >> "$GITHUB_ENV"
+
+      - name: Upload raw files to GCS
+        run: make upload-raw
+
+      - name: Run Bruin pipeline in BigQuery
+        run: bruin run pipeline/pipeline.yml
+
+      - name: Smoke test datasets
+        run: |
+          bq ls --project_id "${{ vars.GCP_PROJECT_ID }}"
+          bq ls "${{ vars.GCP_PROJECT_ID }}:analytics"
+
+      - name: Smoke test fact tables
+        run: |
+          bq query --use_legacy_sql=false 'SELECT COUNT(*) AS row_count FROM `${{ vars.GCP_PROJECT_ID }}.analytics.fct_author_appearances`'
+          bq query --use_legacy_sql=false 'SELECT COUNT(*) AS row_count FROM `${{ vars.GCP_PROJECT_ID }}.analytics.fct_genre_by_year`'

@@ -24,13 +24,15 @@ At a high level, the system will:
 
 ## CI/CD Workflow
 
-The repository includes [`.github/workflows/main.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/main.yml) to automate core validation tasks:
+The repository uses two GitHub Actions workflows:
 
-- run `bruin format --check` to enforce code quality
-- run `bruin validate` to verify pipeline structure
-- execute `bruin dry-run` to validate SQL lineage
-- run `terraform fmt -check -recursive` to enforce Terraform formatting
-- compile Python application and ingestion code
+- [`.github/workflows/ci.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/ci.yml) for lightweight pull request and push checks
+- [`.github/workflows/integration-cloud.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/integration-cloud.yml) for manual cloud integration validation
+
+The split is intentional:
+
+- `ci.yml` performs fast static checks that do not require cloud infrastructure to exist
+- `integration-cloud.yml` provisions infrastructure, uploads raw data, runs the Bruin pipeline, and executes smoke tests against BigQuery
 
 ## Deployment Model
 
