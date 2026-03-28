@@ -17,7 +17,7 @@ The pipeline takes local raw files, uploads them to a cloud data lake, loads the
 
 ## Demo Data Location
 
-This is a demo course project, so the raw input files are intentionally stored in the repository under [`pipeline/assets/`](/home/admin/data-engineering/amz-bestsellers-la/pipeline/assets).
+This is a demo course project for data-engineering-zoomcamp, so the raw input files are intentionally stored in the repository under [`pipeline/assets/`](/home/admin/data-engineering/amz-bestsellers-la/pipeline/assets).
 
 For each run:
 
@@ -31,10 +31,65 @@ For each run:
 
 #### 1. Prerequisites
 
-- Install Terraform
+
+- Install Terraform:
+  ```
+  sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
+
+  curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+
+  sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+
+  sudo apt-get update && sudo apt-get install terraform -y
+  ```
+
 - Install Bruin CLI
+
+  ```
+  curl -fsSL https://getbruin.com/install/cli | bash
+  ```
+  After installation, restart your terminal or run:
+  ```
+  source ~/.bashrc
+  ```
+
 - Install Google Cloud SDK (`gcloud`)
-- Install Python dependencies with `pip install -r requirements.txt`
+
+```
+sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
+
+curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+
+echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
+sudo apt-get update && sudo apt-get install google-cloud-sdk -y
+```
+Initialize Google Cloud
+```
+gcloud init
+```
+
+- Install uv
+  ```
+  curl -Ls https://astral.sh/uv/install.sh | bash
+  ```
+Reload your shell:
+  ```
+  source ~/.bashrc
+  ```
+- Create virtual environment
+  ```
+  uv venv --python 3.12
+  ```
+- Activate environment
+  ```
+  source .venv/bin/activate
+  ```
+
+- Install dependencies from lock file
+  ```
+  uv pip install -r requirements.lock
+  ```
 - Create or use an existing GCP project
 - Download a GCP service account JSON key and save it as `service-account.json`
 - Copy `.bruin.yml.example` to `.bruin.yml` and fill in your GCP values
