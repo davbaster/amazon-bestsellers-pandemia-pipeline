@@ -35,11 +35,14 @@ For each run:
 - Install Terraform:
   ```
   sudo apt-get update && sudo apt-get install -y gnupg software-properties-common curl
-
+  ```
+  ```
   curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-
+  ```
+  ```
   sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-
+  ```
+  ```
   sudo apt-get update && sudo apt-get install terraform -y
   ```
 
@@ -57,16 +60,44 @@ For each run:
 
 ```
 sudo apt-get update && sudo apt-get install -y apt-transport-https ca-certificates gnupg curl
-
+```
+```
 curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-
+```
+```
 echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
-
+```
+```
 sudo apt-get update && sudo apt-get install google-cloud-sdk -y
 ```
-Initialize Google Cloud
+Initialize Google Cloud, you will be asked to sign in using the Internet Browser
 ```
 gcloud init
+```
+- Create or use an existing GCP project
+- Create or use a service account with the following permissions:
+
+
+- Download a GCP service account JSON key and save it as `service-account.json`
+- Copy `.bruin.yml.example` to `.bruin.yml` and fill in your GCP values
+
+Enable the required GCP APIs:
+
+```bash
+gcloud services enable \
+  bigquery.googleapis.com \
+  iam.googleapis.com \
+  iamcredentials.googleapis.com \
+  sts.googleapis.com \
+  storage.googleapis.com
+```
+
+Authenticate locally:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/service-account.json"
+gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+gcloud config set project your-gcp-project-id
 ```
 
 - Install uv
@@ -90,28 +121,7 @@ Reload your shell:
   ```
   uv pip install -r requirements.lock
   ```
-- Create or use an existing GCP project
-- Download a GCP service account JSON key and save it as `service-account.json`
-- Copy `.bruin.yml.example` to `.bruin.yml` and fill in your GCP values
 
-Enable the required GCP APIs:
-
-```bash
-gcloud services enable \
-  bigquery.googleapis.com \
-  iam.googleapis.com \
-  iamcredentials.googleapis.com \
-  sts.googleapis.com \
-  storage.googleapis.com
-```
-
-Authenticate locally:
-
-```bash
-export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/service-account.json"
-gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
-gcloud config set project your-gcp-project-id
-```
 
 #### 2. Manual Infrastructure Setup In GCP
 
