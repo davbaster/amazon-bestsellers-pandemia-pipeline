@@ -1,9 +1,9 @@
 /* @bruin
-name: dim_author_nationality
+name: analytics.dim_author_nationality
 type: bq.sql
 depends:
-  - dim_authors
-  - raw_author_nationality
+  - analytics.dim_authors
+  - raw.raw_author_nationality
 
 materialization:
   type: table
@@ -16,6 +16,6 @@ materialization:
 SELECT
     a.author,
     COALESCE(n.nationality, 'Unknown') AS nationality
-FROM {{ ref('dim_authors') }} AS a
-LEFT JOIN {{ ref('raw_author_nationality') }} AS n
+FROM analytics.dim_authors AS a
+LEFT JOIN raw.raw_author_nationality AS n
     ON a.author = n.author

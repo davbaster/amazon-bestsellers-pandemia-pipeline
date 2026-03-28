@@ -1,8 +1,8 @@
 /* @bruin
-name: fct_author_appearances
+name: analytics.fct_author_appearances
 type: bq.sql
 depends:
-  - stg_bestsellers
+  - analytics.stg_bestsellers
 
 materialization:
   type: table
@@ -17,5 +17,5 @@ SELECT
     COUNT(DISTINCT name) AS distinct_books,
     MIN(year) AS first_year,
     MAX(year) AS last_year
-FROM {{ ref('stg_bestsellers') }}
+FROM analytics.stg_bestsellers
 GROUP BY author

@@ -1,10 +1,10 @@
 """@bruin
-name: ingest_raw_files
+name: raw.ingest_raw_files
 type: python
 image: python:3.12
 depends:
-  - raw_bestsellers
-  - raw_author_nationality
+  - raw.raw_bestsellers
+  - raw.raw_author_nationality
 @bruin"""
 
 import os

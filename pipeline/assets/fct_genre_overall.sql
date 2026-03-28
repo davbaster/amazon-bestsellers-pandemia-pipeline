@@ -1,8 +1,8 @@
 /* @bruin
-name: fct_genre_overall
+name: analytics.fct_genre_overall
 type: bq.sql
 depends:
-  - stg_bestsellers
+  - analytics.stg_bestsellers
 
 materialization:
   type: table
@@ -14,5 +14,5 @@ materialization:
 SELECT
     genre,
     COUNT(*) AS bestseller_rows
-FROM {{ ref('stg_bestsellers') }}
+FROM analytics.stg_bestsellers
 GROUP BY genre

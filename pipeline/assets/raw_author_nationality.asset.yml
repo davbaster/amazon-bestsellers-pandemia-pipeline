@@ -1,4 +1,4 @@
-name: raw_author_nationality
+name: raw.raw_author_nationality
 type: bq.seed
 
 parameters:

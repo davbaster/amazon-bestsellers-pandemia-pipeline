@@ -1,4 +1,4 @@
-name: raw_bestsellers
+name: raw.raw_bestsellers
 type: bq.seed
 
 parameters:

@@ -1,8 +1,8 @@
 /* @bruin
-name: stg_bestsellers
+name: analytics.stg_bestsellers
 type: bq.sql
 depends:
-  - raw_bestsellers
+  - raw.raw_bestsellers
 
 materialization:
   type: table
@@ -21,6 +21,6 @@ SELECT
     Reviews AS reviews,
     Price AS price,
     `User Rating` AS user_rating
-FROM {{ ref('raw_bestsellers') }}
+FROM raw.raw_bestsellers
 WHERE Name IS NOT NULL
   AND Author IS NOT NULL

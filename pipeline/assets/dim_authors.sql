@@ -1,8 +1,8 @@
 /* @bruin
-name: dim_authors
+name: analytics.dim_authors
 type: bq.sql
 depends:
-  - stg_bestsellers
+  - analytics.stg_bestsellers
 
 materialization:
   type: table
@@ -13,5 +13,5 @@ materialization:
 
 SELECT DISTINCT
     author
-FROM {{ ref('stg_bestsellers') }}
+FROM analytics.stg_bestsellers
 WHERE author IS NOT NULL
