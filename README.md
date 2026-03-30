@@ -414,9 +414,6 @@ python3 -m py_compile \
 
 These checks do not prove the whole cloud run succeeded, but they help catch formatting and code issues early.
 
-Architecture placeholder:
-
-![Architecture Placeholder](docs/images/architecture-overview.png)
 
 ## Naming Conventions
 
@@ -531,73 +528,8 @@ This makes sense because the main queries group by year, genre, author, and nati
 
 The Streamlit app at [`app.py`](/home/admin/data-engineering/amz-bestsellers-la/dashboard/app.py) visualizes the same four questions directly from the local asset files and includes more than two tiles.
 
-### Where People See The Dashboard
 
-People can see the dashboard in two ways:
-
-1. locally, by running:
-
-```bash
-streamlit run dashboard/app.py
-```
-
-2. through a hosted deployment URL if you publish the app online
-
-Because this is a demo course project and the dashboard reads from the CSV files committed in the repository, it is a good candidate for a simple hosted Streamlit deployment.
-
-### Deploy The Dashboard
-
-A simple option is to deploy it with Streamlit Community Cloud, which Streamlit documents as a good fit for personal, educational, and non-commercial apps:
-
-- Streamlit deploy docs: https://docs.streamlit.io/deploy
-- Streamlit Community Cloud getting started: https://docs.streamlit.io/deploy/streamlit-community-cloud/get-started
-
-Suggested deployment steps:
-
-1. push the repository to GitHub
-2. make sure `requirements.txt` is present in the repo root
-3. in Streamlit Community Cloud, create a new app from your GitHub repository
-4. set the app entrypoint to `dashboard/app.py`
-5. deploy and copy the public app URL into this README
-
-Recommended README addition after deployment:
-
-```text
-Live dashboard: https://your-app-url.streamlit.app
-```
-
-Recommended screenshots to place in `docs/images/`:
-
-- `step-01-manual-gcp-setup.png`
-- `step-02-bruin-config.png`
-- `step-03-pipeline-run.png`
-- `step-04-dashboard.png`
-- `step-05-terraform-infra.png`
-- `architecture-overview.png`
-- `dashboard-authors-tile.png`
-- `dashboard-genres-tile.png`
-
-Additional dashboard placeholders:
-
-![Authors Tile Placeholder](docs/images/dashboard-authors-tile.png)
-
-![Genres Tile Placeholder](docs/images/dashboard-genres-tile.png)
-
-## Reproducibility
-
-To reproduce the project:
-
-1. install dependencies from [`requirements.txt`](/home/admin/data-engineering/amz-bestsellers-la/requirements.txt)
-2. enable the required GCP APIs
-3. authenticate with `service-account.json`
-4. provision GCP resources with Terraform
-5. configure Bruin using [`.bruin.yml.example`](/home/admin/data-engineering/amz-bestsellers-la/.bruin.yml.example)
-6. upload the raw files from `pipeline/assets/` to GCS
-7. run the Bruin pipeline
-8. validate the infrastructure and data with the smoke tests above
-9. launch the Streamlit dashboard
-
-## Developer Workflow
+# Developer Workflow
 
 When you change the repository, use this simple flow:
 
@@ -610,8 +542,6 @@ When you change the repository, use this simple flow:
 
 1. commit and push
 2. let [`ci.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/ci.yml) run automatically
-3. manually trigger [`integration-cloud.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/integration-cloud.yml) from the GitHub Actions tab
-4. review the smoke test results in BigQuery and GCS
 
 Use the manual cloud integration workflow after changes to:
 
@@ -624,7 +554,7 @@ Use the manual cloud integration workflow after changes to:
 
 ## CI/CD
 
-The project uses two GitHub Actions workflows:
+The project the below GitHub Actions workflows:
 
 - [`ci.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/ci.yml)
   - runs on pushes and pull requests
@@ -632,37 +562,5 @@ The project uses two GitHub Actions workflows:
   - checks `terraform fmt -check -recursive`
   - compiles the Python application and ingestion files
 
-- [`integration-cloud.yml`](/home/admin/data-engineering/amz-bestsellers-la/.github/workflows/integration-cloud.yml)
-  - runs manually with `workflow_dispatch`
-  - authenticates to GCP with Workload Identity Federation
-  - applies Terraform infrastructure
-  - uploads the raw files to GCS
-  - runs the Bruin pipeline in BigQuery
-  - executes smoke tests against the resulting datasets and fact tables
 
-### GitHub Actions With GCP Workload Identity Federation
 
-For CI, the repository is configured to authenticate to Google Cloud using Workload Identity Federation instead of storing a long-lived service account key in GitHub.
-
-Create these GitHub repository values:
-
-Secrets:
-
-- `GCP_WORKLOAD_IDENTITY_PROVIDER`
-- `GCP_SERVICE_ACCOUNT`
-
-Variables:
-
-- `GCP_PROJECT_ID`
-- `GCP_REGION`
-
-Recommended default:
-
-- `GCP_REGION=us-central1`
-
-Important note:
-
-- `project_id` is not a secret
-- `GCP_PROJECT_ID` should be stored as a GitHub Actions repository variable, not a secret
-- the Workload Identity Provider resource name is generally treated as configuration, but storing it as a secret is acceptable if you prefer to keep your CI settings centralized
-- the sensitive part is the credential itself, which WIF avoids storing in GitHub
