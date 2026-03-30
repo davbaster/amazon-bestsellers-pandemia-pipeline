@@ -134,17 +134,30 @@ In the local environment where you downloaded the repository install the followi
 
   Authenticate locally from command prompt:
 
-    ```bash
+    ```
     export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/service-account.json"
+    ```
+    ```
     gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS"
+    ```
+    or use if previous command does not work for you:
+
+    ```
+    gcloud auth login --cred-file="$GOOGLE_APPLICATION_CREDENTIALS"
+    ```
+
+    ```
     gcloud config set project your-gcp-project-id
-  ```
+    ```
+
+Now, we will work to set the python environment:
+
 
 - Install uv to manage your virtual environment.
   ```
   curl -Ls https://astral.sh/uv/install.sh | bash
   ```
-Reload your shell:
+  Reload your shell:
   ```
   source ~/.bashrc
   ```
@@ -171,27 +184,39 @@ Reload your shell:
   cp .bruin.yml.example .bruin.yml
   ```
 
-- Fill .bruin.yml with all the Google Cloud Resources names.
+- Fill .bruin.yml with information requested in the template.
 
   ![Bruin Config example](docs/images/step-03-bruin-config.png)
 
 #### 4. Run the Pipeline
 
-```bash
-# Setup your Bruin environment
-bruin init
 
-# Upload the raw files to the cloud data lake
-export RAW_DATA_LAKE_BUCKET="your-gcp-project-id-amz-bestsellers-raw"
-make upload-raw
+- Setup your Bruin environment
 
-# Run the Bruin batch DAG in BigQuery
-make pipeline-cloud
-```
+  ```
+  bruin init
+  ```
+  Select empty Pipeline option when asked.
+
+- Upload the raw files to the cloud data lake
+
+  ```
+  export RAW_DATA_LAKE_BUCKET="your-gcp-project-id-amz-bestsellers-raw"
+  ```
+  
+  Execute the below command to upload the data to the datalake:
+
+  ```make upload-raw
+  ```
+
+- Run the Bruin batch DAG in BigQuery
+  ```
+  make pipeline-cloud
+  ```
 
 Image placeholder:
 
-![Pipeline Run Placeholder](docs/images/step-03-pipeline-run.png)
+![Pipeline Run Placeholder](docs/images/step-04-pipeline-run.png)
 
 #### 5. Launch Dashboard
 
